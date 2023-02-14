@@ -2,6 +2,8 @@ package wgconfig
 
 import (
 	"bytes"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -145,6 +147,31 @@ AllowedIPs = 10.8.16.4/32`)
 	err := cfg.Read(bytes.NewBuffer(input))
 
 	assert.NoError(t, err)
+	assert.Equal(t, expected, cfg)
+}
+
+func TestConfig_ReadFile(t *testing.T) {
+	file, err := ioutil.TempFile(os.TempDir(), "wgconfig-go-ini")
+	assert.NoError(t, err)
+	defer os.Remove(file.Name())
+
+	_, err = file.Write([]byte(`[Interface]
+	Address = 10.8.16.1/24
+	ListenPort = 51820
+	PrivateKey = 4CwbPHW85Y/xdgB/zD/P0bZdM3XVNpi85H45FMscB1A=`))
+	assert.NoError(t, err)
+
+	cfg := Config{}
+	cfg.ReadFile(file.Name())
+
+	expected := Config{
+		Interface: Interface{
+			ListenPort: 51820,
+			Address:    "10.8.16.1/24",
+			PrivateKey: "4CwbPHW85Y/xdgB/zD/P0bZdM3XVNpi85H45FMscB1A=",
+		},
+	}
+
 	assert.Equal(t, expected, cfg)
 }
 
