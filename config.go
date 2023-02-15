@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Interface Interface
-	Peers     Peers
+	Interface Interface `json:"interface,omitempty"`
+	Peers     Peers     `json:"peers,omitempty"`
 }
 
 func (cfg *Config) AddPeer(p *Peer) {

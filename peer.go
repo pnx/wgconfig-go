@@ -5,11 +5,12 @@ import (
 )
 
 type Peer struct {
-	Comment             string `ini:"-"`
-	PublicKey           string `ini:"PublicKey,omitempty"`
-	AllowedIPs          string `ini:"AllowedIPs,omitempty"`
-	Endpoint            string `ini:"Endpoint,omitempty"`
-	PersistentKeepalive int    `ini:"PersistentKeepalive,omitempty"`
+	Comment             string `ini:"-" json:"comment,omitempty"`
+	PublicKey           string `ini:"PublicKey,omitempty" json:"public_key,omitempty"`
+	PresharedKey        string `ini:"PresharedKey,omitempty" json:"preshared_key,omitempty"`
+	AllowedIPs          string `ini:"AllowedIPs,omitempty" json:"allowed_i_ps,omitempty"`
+	Endpoint            string `ini:"Endpoint,omitempty" json:"endpoint,omitempty"`
+	PersistentKeepalive int    `ini:"PersistentKeepalive,omitempty" json:"persistent_keepalive,omitempty"`
 }
 
 // Slice of peers.
