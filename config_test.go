@@ -2,6 +2,7 @@ package wgconfig
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -189,5 +190,136 @@ PostUp = iptables -A FORWARD -i %i -j ACCEPT ; comment
 	err := cfg.Read(bytes.NewBuffer(input))
 
 	assert.NoError(t, err)
+	assert.Equal(t, expected, cfg)
+}
+
+func TestConfig_ExportJSON(t *testing.T) {
+	var cfg Config
+	cfg.Interface = Interface{
+		Address:    "10.10.10.4/32",
+		ListenPort: 5670,
+		MTU:        1420,
+		DNS:        []string{"8.8.4.4", "8.8.8.8"},
+		PrivateKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=",
+		Table:      25,
+		PreUp:      "pre-up",
+		PostUp:     "post-up",
+		PreDown:    "pre-down",
+		PostDown:   "post-down",
+	}
+
+	cfg.Peers.Add(&Peer{
+		Comment:             "comment",
+		PublicKey:           "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY=",
+		PresharedKey:        "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ=",
+		AllowedIPs:          "10.10.10.8/32",
+		Endpoint:            "endpoint",
+		PersistentKeepalive: 40,
+	})
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	assert.NoError(t, err)
+
+	expected := []byte(`{
+  "interface": {
+    "private_key": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=",
+    "address": "10.10.10.4/32",
+    "listen_port": 5670,
+    "dns": [
+      "8.8.4.4",
+      "8.8.8.8"
+    ],
+    "table": 25,
+    "mtu": 1420,
+    "pre_up": "pre-up",
+    "post_up": "post-up",
+    "pre_down": "pre-down",
+    "post_down": "post-down"
+  },
+  "peers": [
+    {
+      "comment": "comment",
+      "public_key": "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY=",
+      "preshared_key": "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ=",
+      "allowed_ips": "10.10.10.8/32",
+      "endpoint": "endpoint",
+      "persistent_keepalive": 40
+    }
+  ]
+}`)
+	assert.Equal(t, expected, data)
+}
+
+func TestConfig_ImportJSON(t *testing.T) {
+	data := []byte(`{
+"interface": {
+	"private_key": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=",
+	"address": "10.85.22.1/24",
+	"listen_port": 5670,
+	"dns": [ "1.1.1.1", "1.1.0.0" ],
+	"table": 9842,
+	"mtu": 2400,
+	"pre_up": "pre-up",
+	"post_up": "post-up",
+	"pre_down": "pre-down",
+	"post_down": "post-down"
+},
+"peers": [
+	{
+		"comment": "comment",
+		"public_key": "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY=",
+		"preshared_key": "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ=",
+		"allowed_ips": "10.85.22.40/32",
+		"endpoint": "endpoint",
+		"persistent_keepalive": 40
+	},
+	{
+		"public_key": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE=",
+		"preshared_key": "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT=",
+		"allowed_ips": "10.85.22.45/32",
+		"endpoint": "endpoint2",
+		"persistent_keepalive": 35
+	}
+]
+}`)
+
+	var cfg Config
+
+	err := json.Unmarshal(data, &cfg)
+	assert.NoError(t, err)
+
+	expected := Config{
+		Interface: Interface{
+			PrivateKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=",
+			Address:    "10.85.22.1/24",
+			ListenPort: 5670,
+			DNS:        []string{"1.1.1.1", "1.1.0.0"},
+			Table:      9842,
+			MTU:        2400,
+			PreUp:      "pre-up",
+			PreDown:    "pre-down",
+			PostUp:     "post-up",
+			PostDown:   "post-down",
+		},
+
+		Peers: Peers{
+			Peer{
+				Comment:             "comment",
+				PublicKey:           "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY=",
+				PresharedKey:        "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ=",
+				AllowedIPs:          "10.85.22.40/32",
+				Endpoint:            "endpoint",
+				PersistentKeepalive: 40,
+			},
+			Peer{
+				PublicKey:           "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE=",
+				PresharedKey:        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT=",
+				AllowedIPs:          "10.85.22.45/32",
+				Endpoint:            "endpoint2",
+				PersistentKeepalive: 35,
+			},
+		},
+	}
+
 	assert.Equal(t, expected, cfg)
 }
