@@ -8,7 +8,7 @@ type Peer struct {
 	Comment             string `ini:"-" json:"comment,omitempty"`
 	PublicKey           string `ini:"PublicKey,omitempty" json:"public_key,omitempty"`
 	PresharedKey        string `ini:"PresharedKey,omitempty" json:"preshared_key,omitempty"`
-	AllowedIPs          string `ini:"AllowedIPs,omitempty" json:"allowed_i_ps,omitempty"`
+	AllowedIPs          string `ini:"AllowedIPs,omitempty" json:"allowed_ips,omitempty"`
 	Endpoint            string `ini:"Endpoint,omitempty" json:"endpoint,omitempty"`
 	PersistentKeepalive int    `ini:"PersistentKeepalive,omitempty" json:"persistent_keepalive,omitempty"`
 }
