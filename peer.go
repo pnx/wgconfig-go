@@ -13,7 +13,6 @@ type Peer struct {
 	PersistentKeepalive int    `ini:"PersistentKeepalive,omitempty" json:"persistent_keepalive,omitempty"`
 }
 
-// Slice of peers.
 type Peers []Peer
 
 // Add peers to the list.
