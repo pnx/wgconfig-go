@@ -15,7 +15,7 @@ func (cfg *Config) AddPeer(p *Peer) {
 	cfg.Peers.Add(p)
 }
 
-func (cfg *Config) load(source interface{}) error {
+func (cfg *Config) load(source any) error {
 	opt := ini.LoadOptions{
 		SkipUnrecognizableLines:  true,
 		AllowNonUniqueSections:   true,
